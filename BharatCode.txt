@@ -1,0 +1,8 @@
+Project: BharatCLI
+Description: Terminal AI Pair Programmer & Code Review Agent powered by BharatCode Qwen 3.8 27B
+Author: Krishna Sharma (@krishnashrma123qwe-debug)
+Category: Coding & developer tools
+Model: qwen-3.8-27b
+Base URL: https://bharatcode.ai/api/model/v1
+Hackathon: BharatCode Build League 2026
+Submission: Verified Repository Root File
