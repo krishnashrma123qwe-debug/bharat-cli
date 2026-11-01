@@ -1,5 +1,4 @@
 import sys
-import os
 from pathlib import Path
 
 # Ensure root package directory is in sys.path
@@ -96,7 +95,48 @@ Code to review:
     with console.status("[bold cyan]Reviewing code with BharatCode Qwen 3.8 27B...[/bold cyan]"):
         try:
             result = client.generate(prompt=prompt, system="You are an expert static code analysis and security auditing agent.")
-            print_review_summary(target_path.name, score=85, critical_issues=0, warnings=2)
+
+            # Dynamic scoring based on code patterns detected
+            code_lower = content.lower()
+            critical = 0
+            warnings = 0
+            score = 95
+
+            # Check for critical security issues
+            security_patterns = [
+                ("sql injection", ["f\"select", "f'select", '+ "select', "+ 'select", "execute(query", ".format(", "% ("]),
+                ("hardcoded secret", ["password =", "secret =", "api_key =", "token ="]),
+                ("dangerous exec", ["eval(", "exec(", "os.system(", "subprocess.call(", "__import__"]),
+            ]
+            for label, patterns in security_patterns:
+                for p in patterns:
+                    if p in code_lower:
+                        critical += 1
+                        score -= 12
+                        break
+
+            # Check for code smell warnings
+            smell_patterns = [
+                ("unclosed resource", ["open(", "connect("]),
+                ("broad exception", ["except:", "except Exception:"]),
+                ("magic number", [" == 0", " == 1", "range(100", "range(1000"]),
+                ("no type hints", []),
+            ]
+            for label, patterns in smell_patterns:
+                for p in patterns:
+                    if p in code_lower:
+                        warnings += 1
+                        score -= 4
+                        break
+
+            # Check if 'with' statement is used (good practice reduces warnings)
+            if "with open(" in code_lower:
+                warnings = max(0, warnings - 1)
+                score = min(100, score + 4)
+
+            score = max(15, min(100, score))  # Clamp between 15-100
+
+            print_review_summary(target_path.name, score=score, critical_issues=critical, warnings=warnings)
             console.print()
             print_markdown(result)
         except Exception as e:

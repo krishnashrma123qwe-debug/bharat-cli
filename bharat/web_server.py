@@ -160,6 +160,7 @@ def start_web_studio(port: int = 8484):
     StudioRequestHandler.client = client
     
     server = socketserver.TCPServer(("127.0.0.1", port), StudioRequestHandler)
+    server.allow_reuse_address = True
     url = f"http://127.0.0.1:{port}"
     print(f"\n🚀 BharatCode Studio running at: {url}")
     webbrowser.open(url)
